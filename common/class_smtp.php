@@ -181,19 +181,16 @@
 				$result = CSmtp::ExecuteCommand($link, 'HELO '.$ehloMsg, $out);
 			}
 
-			if (587 === $account->OutgoingMailPort)
+			$capa = CSmtp::ParseEhlo($out);
+			if ($result && in_array('STARTTLS', $capa) && USE_STARTTLS && function_exists('stream_socket_enable_crypto') && CSmtp::StartTLS($link))
 			{
-				$capa = CSmtp::ParseEhlo($out);
-				if ($result && in_array('STARTTLS', $capa) && USE_STARTTLS && function_exists('stream_socket_enable_crypto') && CSmtp::StartTLS($link))
-				{
-					CApi::Log('[SMTP] : stream_socket_enable_crypto: '.
-						(@stream_socket_enable_crypto($link, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) ? 'true' : 'false'));
+				CApi::Log('[SMTP] : stream_socket_enable_crypto: '.
+					(@stream_socket_enable_crypto($link, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) ? 'true' : 'false'));
 
-					$result = CSmtp::ExecuteCommand($link, 'EHLO '.$ehloMsg, $out);
-					if (!$result)
-					{
-						$result = CSmtp::ExecuteCommand($link, 'HELO '.$ehloMsg, $out);
-					}
+				$result = CSmtp::ExecuteCommand($link, 'EHLO '.$ehloMsg, $out);
+				if (!$result)
+				{
+					$result = CSmtp::ExecuteCommand($link, 'HELO '.$ehloMsg, $out);
 				}
 			}
 
