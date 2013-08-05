@@ -206,7 +206,6 @@
 	}
 
 	$smtpAuthChecked = (defaultUseSmtpAuth) ? ' checked="checked"' : '';
-	$bAdvancedLogin = false;
 
 	function hiddenDomainValue($sDomainName)
 	{
@@ -388,7 +387,6 @@
 	<?php echo buildInfoCont($errorClass, $errorDesc); ?>
 	<div id="login_screen">
 		<form action="index.php?mode=submit" method="post" id="login_form" name="login_form" onsubmit="NeedToSubmit = true; return false;" autocomplete="on">
-			<input type="hidden" name="advanced_login" value="<?php echo $bAdvancedLogin; ?>" />
 			<div class="wm_login" >
 				<div class="a top"></div>
 				<div class="b top"></div>
@@ -397,7 +395,7 @@
 					<div class="wm_login_content">
 						<table id="login_table" class="login_table_block" border="0" cellspacing="0" cellpadding="10">
 							<tr id="email_cont">
-								<td class="wm_title" style="font-size:12px; width: 70px;" id="lang_Email"><?php echo LANG_Email?>:</td>
+								<td class="wm_title" style="font-size:12px; width: 70px;" id="lang_Email"><label for="email"><?php echo LANG_Email?>:</label></td>
 								<td colspan="4">
 									<nobr>
 										<input style="width: <?php echo $emailWidth;?>; font-size:16px;"
@@ -411,14 +409,14 @@ echo ConvertUtils::AttributeQuote($sLoginFormEmail, true); ?>"
 								</td>
 							</tr>
 							<tr id="login_cont" class="wm_hide">
-								<td class="wm_title" style="font-size:12px; width: 70px;" id="lang_Login"><?php echo LANG_Login; ?>:</td>
+								<td class="wm_title" style="font-size:12px; width: 70px;" id="lang_Login"><label for="inc_login"><?php echo LANG_Login; ?>:</label></td>
 								<td colspan="4">
 									<input tabindex="3" style="width:224px; font-size:16px;" class="wm_input" type="text" value="" id="inc_login" name="inc_login" maxlength="255"
 										onfocus="this.className = 'wm_input_focus';" onblur="this.className = 'wm_input';" />
 								</td>
 							</tr>
 							<tr>
-								<td class="wm_title" style="font-size:12px; width: 70px;" id="lang_Password"><?php echo LANG_Password; ?>:</td>
+								<td class="wm_title" style="font-size:12px; width: 70px;" id="lang_Password"><label for="password"><?php echo LANG_Password; ?>:</label></td>
 								<td colspan="4">
 									<input tabindex="3" style="width:224px; font-size:16px;" class="wm_input wm_password_input" type="password" value="<?php
 echo ConvertUtils::AttributeQuote($sLoginFormPassword, true); ?>" id="password" name="password" maxlength="255"
@@ -453,7 +451,7 @@ echo ConvertUtils::AttributeQuote($sLoginFormPassword, true); ?>" id="password" 
 			? '' : 'wm_hide';
 ?>
 							<tr valign="top" id="captcha_content" class="<?php echo $sCapthcaClass; ?>">
-								<td class="wm_title" style="font-size:12px; width: 70px; padding-top:9px;" id="lang_CaptchaTitle"><?php echo CaptchaTitle; ?>:</td>
+								<td class="wm_title" style="font-size:12px; width: 70px; padding-top:9px;" id="lang_CaptchaTitle"><label for="captcha"><?php echo CaptchaTitle; ?>:</label></td>
 								<td align="center">
 									<input tabindex="5" style="width:95px; font-size:16px;" class="wm_input" type="text" value="" id="captcha" name="captcha" maxlength="6"
 										onfocus="this.className = 'wm_input_focus';" onblur="this.className = 'wm_input';" />
@@ -471,7 +469,7 @@ echo ConvertUtils::AttributeQuote($sLoginFormPassword, true); ?>" id="password" 
 						<div id="advanced_fields" style="margin:0px; height:95px; display:none; overflow:hidden; padding:0px;">
 						<table cellspacing="0" cellpadding="6">
 							<tr id="incoming">
-								<td class="wm_title" id="lang_IncServer"><?php echo LANG_IncServer?>:</td>
+								<td class="wm_title" id="lang_IncServer"><label for="inc_server"><?php echo LANG_IncServer?>:</label></td>
 								<td>
 									<input tabindex="6" class="wm_advanced_input" type="text" value="<?php echo defaultIncServer?>" id="inc_server" name="inc_server" maxlength="255"
 										onfocus="this.className = 'wm_advanced_input_focus';" onblur="this.className = 'wm_advanced_input';" />
@@ -483,19 +481,19 @@ echo ConvertUtils::AttributeQuote($sLoginFormPassword, true); ?>" id="password" 
 										<option value="<?php echo EMailProtocol::IMAP4 ?>" <?php echo $imap4Selected?>><?php echo LANG_ImapProtocol?></option>
 									</select>
 								</td>
-								<td class="wm_title" id="lang_IncPort"><?php echo LANG_IncPort?>:</td>
+								<td class="wm_title" id="lang_IncPort"><label for="inc_port"><?php echo LANG_IncPort?>:</label></td>
 								<td>
 									<input tabindex="8" class="wm_advanced_input" type="text" value="<?php echo defaultIncPort?>" id="inc_port" name="inc_port" maxlength="5"
 										onfocus="this.className = 'wm_advanced_input_focus';" onblur="this.className = 'wm_advanced_input';" />
 								</td>
 							</tr>
 							<tr id="outgoing">
-								<td class="wm_title" id="lang_OutServer"><?php echo LANG_OutServer?>:</td>
+								<td class="wm_title" id="lang_OutServer"><label for="out_server"><?php echo LANG_OutServer?>:</label></td>
 								<td colspan="2">
 									<input tabindex="9" class="wm_advanced_input" type="text" value="<?php echo defaultOutServer?>" id="out_server" name="out_server" maxlength="255"
 										onfocus="this.className = 'wm_advanced_input_focus';" onblur="this.className = 'wm_advanced_input';" />
 								</td>
-								<td class="wm_title" id="lang_OutPort"><?php echo LANG_OutPort?>:</td>
+								<td class="wm_title" id="lang_OutPort"><label for="out_port"><?php echo LANG_OutPort?>:</label></td>
 								<td align="right">
 									<input tabindex="10" class="wm_advanced_input" type="text" value="<?php echo defaultOutPort?>" id="out_port" name="out_port" maxlength="5"
 										onfocus="this.className = 'wm_advanced_input_focus';" onblur="this.className = 'wm_advanced_input';" />
