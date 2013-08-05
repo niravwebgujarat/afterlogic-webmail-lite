@@ -169,7 +169,7 @@ class CPOP3
 		$this->InitCapa();
 		if($this->_isSupport('STLS') && USE_POP3_STARTTLS && function_exists('stream_socket_enable_crypto'))
 		{
-			$this->_log->WriteLine('POP3 : trying to secure the connection to '.$server.':'.$port);
+			$this->_log('POP3 : trying to secure the connection to '.$sServer.':'.$iPort);
 			if(!$this->_putline('STLS'))
 			{
 				return false;
@@ -1010,20 +1010,12 @@ class CPOP3
 	 */
 	public function _get_capability()
 	{
-		if(!$this->_logging('CAPA'))
-		{
-			return false;
-		}
 		if(!$this->_putline('CAPA'))
 		{
 			return false;
 		}
 
 		$response = $this->_getnextstring();
-		if(!$this->_logging($response))
-		{
-			return false;
-		}
 		if(substr($response,0,3) != '+OK')
 		{
 			return false;

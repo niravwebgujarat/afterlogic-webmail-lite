@@ -48,30 +48,15 @@ class CApiPop3MailProtocol extends CApiNetAbstract
 	{
 		if (null === $this->aCapa || $bForce)
 		{
-			if ($this->WriteLine($sTag.' CAPA'))
+			if ($this->SendCommand('CAPA'))
 			{
-				$sResponse = $this->GetResponse($sTag);
-				if ($this->CheckResponse($sTag, $sResponse))
+				$this->aCapa = array();
+				while($sResponse = $this->GetNextLine())
 				{
-					$this->aCapa = array();
-					$aCapasLineArray = explode("\n", $sResponse);
-					foreach ($aCapasLineArray as $sCapasLine)
-					{
-						$sCapa = strtoupper(trim($sCapasLine));
-						if (substr($sCapa, 0, 12) === '* CAPABILITY')
-						{
-							$sCapa = substr($sCapa, 12);
-							$aArray = explode(' ', $sCapa);
-
-							foreach ($aArray as $sSubLine)
-							{
-								if (strlen($sSubLine) > 0)
-								{
-									$this->aCapa[] = $sSubLine;
-								}
-							}
-						}
+					if (substr($sResponse, 0, 3) == ".\r\n") {
+						break;
 					}
+					$this->aCapa[] = trim($sResponse);
 				}
 			}
 		}
@@ -86,6 +71,21 @@ class CApiPop3MailProtocol extends CApiNetAbstract
 	 */
 	public function Login($sLogin, $sPassword)
 	{
+		$bTLS = ($this->IsSupported('STLS') && function_exists('stream_socket_enable_crypto'));
+		if($bTLS) {
+			CApi::Log('POP3 : Connection to '.$this->sHost.':'.$this->iPort.' advertises STLS support. Attempting to secure.');
+			if ($this->SendCommand('STLS'))
+			{
+				@stream_socket_enable_crypto($this->rConnect, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+				CApi::Log('POP3 : Connection secured. Re-requesting server capabilities.');
+				$this->IsSupported('STLS', true);
+			}
+			else
+			{
+				CApi::Log('POP3 : Unable to secure connection. Will try to continue witout TLS encryption. Error: '.$sResponse, ELogLevel::Warning);
+			}
+		}
+
 		return $this->SendCommand('USER '.$sLogin) && $this->SendCommand('PASS '.$sPassword, array($sPassword));
 	}
 
