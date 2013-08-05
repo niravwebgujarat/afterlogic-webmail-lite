@@ -79,6 +79,9 @@
 		define('LDAP_CONTACT_PASSWORD', LDAP_LOGIN_PASSWORD);
 		define('LDAP_CONTACT_DN', 'o=pab');
 		
+	define('USE_IMAP_STARTTLS', true);
+	define('USE_POP3_STARTTLS', true);
+	
 	define('WMVERSION', CApi::Version());
 	define('IS_SUPPORT_ICONV', api_Utils::IsIconvSupported());
 	

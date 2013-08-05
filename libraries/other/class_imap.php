@@ -902,13 +902,29 @@ class IMAPMAIL
 		}
 
 		/* set socket timeout
-         * it is valid for all other functions! */
+		 * it is valid for all other functions! */
 		@socket_set_timeout($this->connection, $sFgetTimeout);
-        /* socket_set_blocking($this->connection, true); */
+		// socket_set_blocking($this->connection, true);
 
 		$this->get_line();
 		$this->state = 'AUTHORIZATION';
-		// $this->InitCapa();
+		$this->InitCapa();
+		if($this->_isSupport('STARTTLS') && USE_IMAP_STARTTLS && function_exists('stream_socket_enable_crypto'))
+		{
+			$this->_log('IMAP4 : trying to secure the connection to '.$host.':'.$this->port);
+			if ($this->put_line($this->tag.' STARTTLS'))
+			{
+				$response = $this->get_server_responce();
+				if ($this->_checkResponse($response))
+				{
+					@stream_socket_enable_crypto($this->connection, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+				}
+				else
+				{
+					$this->error = 'IMAP4 - Unable to secure connection. Error: '.$response;
+				}
+			}
+		}
 		return true;
 	}
 

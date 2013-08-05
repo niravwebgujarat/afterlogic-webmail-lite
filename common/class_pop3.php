@@ -37,6 +37,12 @@ class CPOP3
 	var $apop_detect;
 
 	/**
+	 * @access private
+	 * @var array
+	 */
+	var $_capas = null;
+
+	/**
 	 * @param bool $bApopDetect = false
 	 * @return void
 	 */
@@ -160,6 +166,25 @@ class CPOP3
 
 		$this->apop_banner = $this->_parse_banner($sResponse);
 		$this->state = 'AUTHORIZATION';
+		$this->InitCapa();
+		if($this->_isSupport('STLS') && USE_POP3_STARTTLS && function_exists('stream_socket_enable_crypto'))
+		{
+			$this->_log->WriteLine('POP3 : trying to secure the connection to '.$server.':'.$port);
+			if(!$this->_putline('STLS'))
+			{
+				return false;
+			}
+			$response = $this->_getnextstring();
+			if(substr($response, 0, 3) == '+OK')
+			{
+				@stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+			}
+			else
+			{
+				$this->error = 'POP3 - Unable to secure connection. Error: '.$response;
+				$this->setGlobalErrorAndWriteLog();
+			}
+		}
 		return true;
 	}
 
@@ -975,6 +1000,76 @@ class CPOP3
 			return '<'.$sBanner.'>';
 		}
 		return '';
+	}
+
+	/**
+	 * The _get_capability function returns a listing of capabilities that the
+	 * server supports.
+	 *
+	 * @access private
+	 */
+	public function _get_capability()
+	{
+		if(!$this->_logging('CAPA'))
+		{
+			return false;
+		}
+		if(!$this->_putline('CAPA'))
+		{
+			return false;
+		}
+
+		$response = $this->_getnextstring();
+		if(!$this->_logging($response))
+		{
+			return false;
+		}
+		if(substr($response,0,3) != '+OK')
+		{
+			return false;
+		}
+
+
+		$capas = array();
+		$response = $this->_getnextstring();
+		while(substr($response, 0, 3) != ".\r\n")
+		{
+			$capas[] = trim($response);
+			$response = $this->_getnextstring();
+			if ($response === false)
+			{
+				$capas = array();
+				break;
+			}
+		}
+		$this->_resetTimeOut(true);
+
+		if(!empty($capas))
+		{
+			$this->_capas = $capas;
+		}
+	}
+
+	/**
+	 * @param string $_str
+	 * @return bool
+	 */
+	public function _isSupport($_str)
+	{
+		if (null === $this->_capas)
+		{
+			$this->InitCapa();
+		}
+
+		return $this->_capas ? in_array($_str, $this->_capas) : false;
+	}
+
+	public function InitCapa()
+	{
+		if (null === $this->_capas)
+		{
+			$this->_get_capability();
+		}
 	}
 
 	/**

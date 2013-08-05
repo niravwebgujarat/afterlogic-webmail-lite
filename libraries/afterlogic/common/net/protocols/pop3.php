@@ -15,6 +15,18 @@ CApi::Inc('common.net.abstract');
 class CApiPop3MailProtocol extends CApiNetAbstract
 {
 	/**
+	 * @var array
+	 */
+	protected $aCapa;
+
+	public function __construct($sHost, $iPort, $bUseSsl = false, $iConnectTimeOut = null, $iSocketTimeOut = null)
+	{
+		parent::__construct($sHost, $iPort, $bUseSsl, $iConnectTimeOut, $iSocketTimeOut);
+
+		$this->aCapa = null;
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function Connect()
@@ -25,6 +37,46 @@ class CApiPop3MailProtocol extends CApiNetAbstract
 			$bResult = $this->CheckResponse($this->GetNextLine());
 		}
 		return $bResult;
+	}
+
+	/**
+	 * @param string $sIncCapa
+	 * @param bool $bForce = false
+	 * @return bool
+	 */
+	public function IsSupported($sIncCapa, $bForce = false)
+	{
+		if (null === $this->aCapa || $bForce)
+		{
+			if ($this->WriteLine($sTag.' CAPA'))
+			{
+				$sResponse = $this->GetResponse($sTag);
+				if ($this->CheckResponse($sTag, $sResponse))
+				{
+					$this->aCapa = array();
+					$aCapasLineArray = explode("\n", $sResponse);
+					foreach ($aCapasLineArray as $sCapasLine)
+					{
+						$sCapa = strtoupper(trim($sCapasLine));
+						if (substr($sCapa, 0, 12) === '* CAPABILITY')
+						{
+							$sCapa = substr($sCapa, 12);
+							$aArray = explode(' ', $sCapa);
+
+							foreach ($aArray as $sSubLine)
+							{
+								if (strlen($sSubLine) > 0)
+								{
+									$this->aCapa[] = $sSubLine;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return is_array($this->aCapa) && in_array($sIncCapa, $this->aCapa);
 	}
 
 	/**
