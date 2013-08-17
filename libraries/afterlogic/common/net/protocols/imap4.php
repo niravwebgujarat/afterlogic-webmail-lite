@@ -90,6 +90,24 @@ class CApiImap4MailProtocol extends CApiNetAbstract
 	{
 		$bReturn = false;
 
+		$bTLS = ($this->IsSupported('STARTTLS') && function_exists('stream_socket_enable_crypto'));
+		if($bTLS) {
+			CApi::Log('IMAP4 : Connection to '.$this->sHost.':'.$this->iPort.' advertises STARTTLS support. Attempting to secure.');
+			$sTag = $this->getNextTag();
+			$this->WriteLine($sTag.' STARTTLS');
+			$sResponse = $this->GetResponse($sTag);
+			if ($this->CheckResponse($sTag, $sResponse))
+			{
+				@stream_socket_enable_crypto($this->rConnect, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+				CApi::Log('IMAP4 : Connection secured. Re-requesting server capabilities.');
+				$this->IsSupported('STARTTLS', true);
+			}
+			else
+			{
+				CApi::Log('IMAP4 : Unable to secure connection. Will try to continue witout TLS encryption. Error: '.$sResponse, ELogLevel::Warning);
+			}
+		}
+
 		$bPlain = ((bool) CApi::GetConf('login.enable-plain-auth', false)) && $this->IsSupported('AUTH=PLAIN');
 		if ($bPlain)
 		{
